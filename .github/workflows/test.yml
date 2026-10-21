@@ -1,0 +1,74 @@
+name: test
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Prepare XAMPP-like and end-of-life PHP
+        shell: pwsh
+        run: |
+          $src = Split-Path (Get-Command php.exe).Source -Parent
+          New-Item -ItemType Directory -Force C:\xampp | Out-Null
+          Copy-Item $src -Destination C:\xampp\php -Recurse
+          New-Item -ItemType Directory -Force C:\xampp\apache\conf, C:\xampp\htdocs\site\wp-includes | Out-Null
+          Set-Content C:\xampp\apache\conf\httpd.conf 'LoadModule php_module "C:/xampp/php/php8apache2_4.dll"'
+          Set-Content C:\xampp\htdocs\site\wp-includes\version.php "<?php`n`$wp_version = '6.4.2';"
+          Invoke-WebRequest https://windows.php.net/downloads/releases/archives/php-7.4.33-Win32-vc15-x64.zip -OutFile php74.zip
+          Expand-Archive php74.zip -DestinationPath C:\php
+      - name: Run with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\php-check.ps1 | Tee-Object out51.txt
+      - name: Run with PowerShell 7
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -File ./php-check.ps1 | Tee-Object out7.txt
+      - name: Check results
+        shell: pwsh
+        run: |
+          foreach ($f in 'out51.txt', 'out7.txt') {
+            $t = Get-Content $f -Raw
+            Write-Output "== $f"
+            $verdicts = [regex]::Matches($t, '-> (AFFECTED|FIXED|END OF LIFE)')
+            Write-Output ("verdict lines: {0}" -f $verdicts.Count)
+            if ($verdicts.Count -lt 3) { throw "$f : expected at least 3 verdict lines (setup-php, XAMPP copy, PHP 7.4)" }
+            if ($t -notmatch 'C:\\php\\php\.exe : .*7\.4\.33[\s\S]*?-> END OF LIFE') { throw "$f : PHP 7.4 not judged as END OF LIFE" }
+            if ($t -notmatch 'Apache with PHP module \(mod_php\)') { throw "$f : mod_php not detected" }
+            if ($t -notmatch 'WordPress 6\.4\.2') { throw "$f : WordPress not detected" }
+            if ($t -notmatch 'session\.upload_progress\.enabled') { throw "$f : mitigation setting not shown" }
+          }
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ubuntu package PHP (should say "OS の部品")
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq php-cli > /dev/null
+          bash ./php-check.sh | tee out-ubuntu.txt
+          grep -q 'OS の部品として入った PHP です' out-ubuntu.txt
+      - name: Official PHP image with Apache (should give a version verdict and mod_php)
+        run: |
+          docker run --rm -v "$PWD":/s php:8.2-apache bash /s/php-check.sh | tee out-docker.txt
+          grep -q -E '→ (対象です|修正済みの版です)' out-docker.txt
+          grep -q 'php_module' out-docker.txt
+      - name: End-of-life PHP image (should say サポートが終わった版)
+        run: |
+          docker run --rm -v "$PWD":/s php:7.4-cli bash /s/php-check.sh | tee out-eol.txt
+          grep -q 'サポートが終わった版です' out-eol.txt
+
+  skill-copies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The skill folder has the same scripts as the top folder
+        run: |
+          cmp php-check.sh skills/php-vuln-check/php-check.sh
+          cmp php-check.ps1 skills/php-vuln-check/php-check.ps1
