@@ -47,6 +47,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\php-check.ps1 > php-check-
 
 ドライブ全体は探しません。PHP がふつう入る場所(XAMPP・Laragon・WAMP・IIS・Program Files など)、動いている処理、登録されたサービスだけを見ます。
 
+コピペ用の短いコマンドと読み方は `docs/php-check-guide-2026-10-21.pdf`(A4・3頁)にもまとめています。
+
 ## 結果の読み方
 
 | 表示 | 意味 | すること |

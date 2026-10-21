@@ -87,8 +87,11 @@ Write-Output ' Ask whoever runs that system before changing it; the web server m
 
 # -------------------------------------------------------------
 Section '4. PHP applications found (WordPress, phpMyAdmin, EC-CUBE, Moodle, MediaWiki, Laravel)'
-foreach ($b in $bases) {
-  Get-ChildItem -Path $b -Recurse -Depth 6 -File -Include 'version.php', 'Constant.php', 'moodlelib.php', 'LocalSettings.php', 'artisan', 'config.inc.php' |
+# Web folders only (Program Files is skipped here to keep this fast)
+$webBases = @($bases | Where-Object { $_ -ne $env:ProgramFiles -and $_ -ne ${env:ProgramFiles(x86)} })
+foreach ($b in $webBases) {
+  foreach ($name in 'version.php', 'Constant.php', 'moodlelib.php', 'LocalSettings.php', 'artisan', 'config.inc.php') {
+  Get-ChildItem -Path $b -Recurse -Depth 6 -File -Filter $name |
   ForEach-Object {
     $f = $_.FullName
     if ($f -match '\\wp-includes\\version\.php$') {
@@ -100,6 +103,7 @@ foreach ($b in $bases) {
     elseif ($f -match '\\LocalSettings\.php$') { Write-Output "MediaWiki: $f" }
     elseif ($f -match '\\artisan$') { Write-Output "Laravel?: $f" }
     elseif ($f -match '(?i)phpmyadmin|\\pma\\') { Write-Output "phpMyAdmin: $f" }
+  }
   }
 }
 Write-Output '(These are fixed by updating PHP in section 1; updating the application itself is a separate matter.)'

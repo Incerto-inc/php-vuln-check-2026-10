@@ -24,6 +24,7 @@ jobs:
           Expand-Archive php74.zip -DestinationPath C:\php
       - name: Run with Windows PowerShell 5.1
         shell: powershell
+        timeout-minutes: 4
         run: |
           powershell -NoProfile -ExecutionPolicy Bypass -File .\php-check.ps1 | Tee-Object out51.txt
       - name: Run with PowerShell 7
@@ -44,6 +45,24 @@ jobs:
             if ($t -notmatch 'WordPress 6\.4\.2') { throw "$f : WordPress not detected" }
             if ($t -notmatch 'session\.upload_progress\.enabled') { throw "$f : mitigation setting not shown" }
           }
+
+      - name: One-liners printed in the PDF guide (docs/guide.html)
+        shell: pwsh
+        run: |
+          $out1 = Get-Command php.exe -All -ErrorAction SilentlyContinue |
+            ForEach-Object { '{0}  {1}' -f $_.Source, $_.Version }
+          $out1
+          $p = @('C:\xampp\php\php.exe', 'C:\php\php.exe',
+                 'C:\laragon\bin\php\*\php.exe', 'C:\wamp64\bin\php\*\php.exe')
+          $out2 = Get-ChildItem $p -ErrorAction SilentlyContinue |
+            ForEach-Object { '{0}  {1}' -f $_.FullName, $_.VersionInfo.ProductVersion }
+          $out2
+          Get-CimInstance Win32_Service |
+            Where-Object { $_.PathName -match 'php|httpd|apache' } |
+            Format-Table Name, State, PathName -AutoSize
+          if (-not ($out1 -match '\d+\.\d+\.\d+')) { throw 'one-liner 1: no version' }
+          if (-not ($out2 -match 'C:\\xampp\\php\\php\.exe  8\.2\.')) { throw 'one-liner 2: XAMPP PHP not found' }
+          if (-not ($out2 -match 'C:\\php\\php\.exe  7\.4\.33')) { throw 'one-liner 2: PHP 7.4 not found' }
 
   linux:
     runs-on: ubuntu-latest

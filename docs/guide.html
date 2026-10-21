@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>PHP の重大な脆弱性 確認の手順（CVE-2026-109618 / CVE-2026-109619）</title>
+<style>
+  @font-face { font-family: 'LINE Seed JP'; src: url('fonts/LINESeedJP_OTF_Rg.otf') format('opentype'); font-weight: 400; }
+  @font-face { font-family: 'LINE Seed JP'; src: url('fonts/LINESeedJP_OTF_Bd.otf') format('opentype'); font-weight: 700; }
+  @font-face { font-family: 'Artemis'; src: url('fonts/Artemis_Inter_041621.otf') format('opentype'); }
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root { --teal: #008080; --ink: #1a1919; --mute: #5a6663; --line: #d9e2e0; --bg: #f3f8f7; }
+  html, body { background: #fff; }
+  body { font-family: 'LINE Seed JP', 'Hiragino Sans', sans-serif; color: var(--ink); font-size: 10.2pt; line-height: 1.7; margin: 0; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--teal); padding-bottom: 6px; margin-bottom: 12px; }
+  header h1 { font-size: 16pt; margin: 0; letter-spacing: .02em; }
+  header .sub { font-size: 9pt; color: var(--mute); margin-top: 2px; }
+  header .logo { font-family: 'Artemis', serif; font-size: 15pt; color: var(--teal); letter-spacing: -.5px; }
+  header .date { font-size: 8.5pt; color: var(--mute); text-align: right; }
+  h2 { font-size: 11.5pt; color: var(--teal); margin: 16px 0 6px; padding-left: 8px; border-left: 4px solid var(--teal); }
+  h3 { font-size: 10.2pt; margin: 10px 0 4px; }
+  p { margin: 4px 0; }
+  .note { font-size: 9pt; color: var(--mute); }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 9.4pt; }
+  th, td { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: left; vertical-align: top; }
+  th { background: var(--bg); font-weight: 700; white-space: nowrap; }
+  td.k { white-space: nowrap; font-weight: 700; width: 22%; }
+  code, pre { font-family: Menlo, Consolas, 'Courier New', monospace; }
+  code { font-size: 8.8pt; background: var(--bg); padding: 0 3px; border-radius: 3px; }
+  pre { font-size: 8.6pt; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 3px 0 8px; white-space: pre; line-height: 1.5; }
+  .cmd-label { font-size: 9pt; color: var(--mute); margin: 6px 0 0; }
+  .box { border: 1px solid var(--teal); border-radius: 6px; padding: 8px 10px; margin: 8px 0; background: #fbfefe; }
+  .pb { break-before: page; }
+  footer { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 6px; font-size: 8.5pt; color: var(--mute); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>PHP の重大な脆弱性　確認の手順</h1>
+    <div class="sub">CVE-2026-109618 / CVE-2026-109619（2026年10月21日 修正版公開）</div>
+  </div>
+  <div class="date"><div class="logo">Incerto</div>2026年10月21日</div>
+</header>
+
+<h2>1. 今回の脆弱性</h2>
+<table>
+  <tr><td class="k">中身</td><td>外部から、ログインなしでサーバー上の不正なプログラムを実行されるおそれ</td></tr>
+  <tr><td class="k">対象</td><td>修正版より前のすべての版</td></tr>
+  <tr><td class="k">修正版</td><td><b>8.2.35 ／ 8.3.36 ／ 8.4.27 ／ 8.5.12</b></td></tr>
+  <tr><td class="k">8.1 以前</td><td>サポートが終わっていて、修正版は出ません。サポート中の版へ上げる必要があります</td></tr>
+  <tr><td class="k">確実な対策</td><td>修正版への更新（開発元の告知）</td></tr>
+</table>
+<p class="note">出典：PHP の開発元の告知 https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w ／ GHSA-6wmf-4rv5-p3rp</p>
+
+<h2>2. レンタルサーバー（共用）の上のサイト</h2>
+<p>PHP の本体はサーバー会社が更新します。ただし、使う版はサイトごとに選べることが多いため、<b>サイトごとに版を確かめます</b>。</p>
+<table>
+  <tr><th>確かめる場所</th><th>見るところ</th></tr>
+  <tr><td>WordPress の管理画面</td><td>「ツール → サイトヘルス → 情報 → サーバー」の PHP のバージョン</td></tr>
+  <tr><td>サーバー会社の管理画面</td><td>PHP のバージョンの設定（ドメインごと）と、サーバー会社のお知らせ</td></tr>
+</table>
+<p class="note">8.1 以前を選んでいるサイトは、サーバー会社が更新しても直りません。管理画面で版を上げます（WordPress やプラグインが新しい版で動くかを、管理されている方と確かめてから）。</p>
+
+<h2>3. 社内のサーバー・パソコンで確かめる</h2>
+<p>どれも<b>読むだけ</b>で、何も変更しません。結果をそのまま Incerto にお送りいただいても構いません。<br>
+まとめて確かめる場合は、別にお渡しする <code>php-check.sh</code>（Linux・Mac）／ <code>php-check.ps1</code>（Windows）をお使いください。</p>
+
+<h3>Linux・Mac（ターミナル）</h3>
+<p class="cmd-label">① PHP の版</p>
+<pre>php -v</pre>
+<p class="cmd-label">② OS の部品として入った PHP（Ubuntu・Debian の場合 ／ RHEL 系の場合）</p>
+<pre>dpkg -l | grep -E '^ii +php[0-9.]*-(cli|fpm|common) '</pre>
+<pre>rpm -qa | grep -E '^php[0-9]*(-cli|-fpm|-common)?-[0-9]'</pre>
+<p class="cmd-label">③ Apache に組み込んで動かしているか ／ PHP-FPM で動かしているか</p>
+<pre>apachectl -M 2>/dev/null | grep -i php</pre>
+<pre>ps aux | grep 'php-fpm: master' | grep -v grep</pre>
+<p class="cmd-label">④ 開発元が挙げる緩和の設定の今の値</p>
+<pre>php -i | grep session.upload_progress.enabled</pre>
+
+<h3>Windows（PowerShell）</h3>
+<p class="cmd-label">① PATH の通った PHP と版</p>
+<pre>Get-Command php.exe -All -ErrorAction SilentlyContinue |
+  ForEach-Object { '{0}  {1}' -f $_.Source, $_.Version }</pre>
+<p class="cmd-label">② よく使われる場所の PHP と版（XAMPP・C:\php・Laragon・WAMP）</p>
+<pre>$p = @('C:\xampp\php\php.exe', 'C:\php\php.exe',
+       'C:\laragon\bin\php\*\php.exe', 'C:\wamp64\bin\php\*\php.exe')
+Get-ChildItem $p -ErrorAction SilentlyContinue |
+  ForEach-Object { '{0}  {1}' -f $_.FullName, $_.VersionInfo.ProductVersion }</pre>
+<p class="cmd-label">③ PHP や Apache を動かしているサービス</p>
+<pre>Get-CimInstance Win32_Service |
+  Where-Object { $_.PathName -match 'php|httpd|apache' } |
+  Format-Table Name, State, PathName -AutoSize</pre>
+<p class="cmd-label">④ IIS で PHP を使っているか（IIS がある場合）</p>
+<pre>&amp; "$env:windir\system32\inetsrv\appcmd.exe" list config -section:system.webServer/fastCgi</pre>
+
+<h2 class="pb">4. 結果の読み方</h2>
+<table>
+  <tr><th>結果</th><th>意味</th><th>すること</th></tr>
+  <tr><td>8.2.35 ／ 8.3.36 ／ 8.4.27 ／ 8.5.12 より前</td><td>対象の版</td><td>修正版へ更新する</td></tr>
+  <tr><td>上の版以降</td><td>修正済み</td><td>対応済み</td></tr>
+  <tr><td>8.1 以前（7.x・5.x を含む）</td><td>サポートが終わった版。修正版は出ない</td><td>サポート中の版へ上げる</td></tr>
+  <tr><td>② に php のパッケージが出た</td><td>OS が配っている PHP。OS の提供元が、版の番号を変えずに直しを入れる</td><td>番号では判断せず、OS の更新（apt ／ dnf）と提供元のセキュリティ情報を確かめる</td></tr>
+  <tr><td>③ に php_module が出た（Linux）／ Apache のサービスと PHP がある（Windows・XAMPP）</td><td>Apache に組み込んで動かしている（mod_php）。開発元の告知では影響がいちばん大きい形</td><td>更新を急ぐ</td></tr>
+  <tr><td>④ が On</td><td>開発元が挙げる緩和の設定が、まだ有効</td><td>更新までのつなぎとして Off にするのが緩和の1つ（更新の代わりにはならない）。変える前に管理者と相談し、Web の処理を再起動する</td></tr>
+</table>
+
+<h2>5. 更新のしかた</h2>
+<table>
+  <tr><th>動かし方</th><th>更新のしかた</th></tr>
+  <tr><td>レンタルサーバー</td><td>サーバー会社が更新する。8.1 以前を選んでいるサイトは、管理画面で版を上げる</td></tr>
+  <tr><td>Ubuntu・Debian の部品</td><td>OS を更新する（<code>apt</code>。提供元が直しを出してから）</td></tr>
+  <tr><td>RHEL・Rocky・Alma の部品</td><td>OS を更新する（<code>dnf</code>。提供元が直しを出してから）</td></tr>
+  <tr><td>公式の PHP のコンテナ</td><td>新しいイメージを取り直して作り直す</td></tr>
+  <tr><td>Windows（XAMPP・手で入れた PHP）</td><td>https://windows.php.net/download/ から修正版を入れ直す</td></tr>
+</table>
+
+<div class="box">
+  <b>すぐに更新できない場合</b><br>
+  修正が済むまでの間、サイトや仕組みを一時的に止めることも、有効な対策の一つとされています（首相・国家サイバー統括室の呼びかけ）。使っていないサイトや仕組みは、この機会に止めることもご検討ください。
+</div>
+
+<footer>
+  ご不明な点は、Incerto合同会社までお気軽にご連絡ください。https://www.incerto.tech/<br>
+  この手順は 2026年10月21日時点の開発元の告知にもとづきます。最新の情報は開発元の告知をご確認ください。
+</footer>
+
+</body>
+</html>
