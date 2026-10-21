@@ -56,7 +56,7 @@ foreach ($p in $exe) {
 }
 
 # -------------------------------------------------------------
-Section '2. How PHP is served (the advisory says Apache mod_php is the most exposed)'
+Section '2. How PHP is served (every setup needs the update)'
 foreach ($b in $bases) {
   Get-ChildItem -Path $b -Recurse -Depth 4 -File -Filter 'httpd.conf' | ForEach-Object {
     $m = Select-String -Path $_.FullName -Pattern '^\s*LoadModule\s+php' | Select-Object -First 1
@@ -76,7 +76,7 @@ if (Get-Command Get-NetTCPConnection) {
 }
 
 # -------------------------------------------------------------
-Section '3. Mitigation settings named by the advisory (a stopgap until you update, not a fix)'
+Section '3. Mitigation settings named by the advisory (values seen by php.exe; a stopgap, not a fix)'
 foreach ($p in ($exe | Where-Object { $_ -match '\\php\.exe$' })) {
   Write-Output "[$p]"
   & $p -i 2>$null | Select-String -Pattern '^(Loaded Configuration File|session\.upload_progress\.enabled|fatal_error_backtraces) ' |

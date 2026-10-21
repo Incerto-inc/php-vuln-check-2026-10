@@ -75,7 +75,7 @@ fi
 echo "(ここに出たものは、OS の提供元のセキュリティ情報で直しの有無を確かめます)"
 
 # ---------------------------------------------------------------
-section "3. PHP の動かし方(公式の告知では Apache 組み込み = mod_php の影響が最も大きい)"
+section "3. PHP の動かし方(どの動かし方でも、修正版への更新が必要です)"
 for a in apache2ctl apachectl httpd; do
   if command -v "$a" >/dev/null 2>&1; then
     m=$("$a" -M 2>/dev/null | grep -i -E 'php[0-9_]*_module')
@@ -89,7 +89,7 @@ for d in /etc/nginx /etc/httpd /etc/apache2 /usr/local/etc/nginx /usr/local/apac
 done
 
 # ---------------------------------------------------------------
-section "4. 公式が挙げる緩和の設定の今の値(更新までのつなぎ。更新の代わりにはなりません)"
+section "4. 開発元が挙げる緩和の設定の今の値(コマンドライン用の設定の値です。Web 側の設定と違うことがあります)"
 if [ -n "$cands" ]; then
   while read -r p; do
     case "$(basename "$p")" in php|php[0-9.]*) ;; *) continue ;; esac
