@@ -48,7 +48,7 @@
   <tr><td class="k">中身</td><td>外部から、ログインなしでサーバー上の不正なプログラムを実行されるおそれ</td></tr>
   <tr><td class="k">対象</td><td>修正版より前のすべての版</td></tr>
   <tr><td class="k">修正版</td><td><b>8.2.35 ／ 8.3.36 ／ 8.4.27 ／ 8.5.12</b></td></tr>
-  <tr><td class="k">8.1 以前</td><td>サポートが終わっていて、修正版は出ません。サポート中の版へ上げる必要があります</td></tr>
+  <tr><td class="k">8.1 以前</td><td>開発元の修正版は出ません。OS や管理画面の提供元が直しを入れていることがあります（例：Ubuntu 22.04 の php8.1、cPanel の ea-php74〜81）。それ以外は、サポート中の版へ上げる必要があります</td></tr>
   <tr><td class="k">確実な対策</td><td>修正版への更新（開発元の告知）</td></tr>
 </table>
 <p class="note">出典：PHP の開発元の告知 https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w ／ GHSA-6wmf-4rv5-p3rp</p>
@@ -111,9 +111,11 @@ Get-ChildItem $p -ErrorAction SilentlyContinue |
   <tr><td>レンタルサーバー</td><td>サーバー会社が更新する。8.1 以前を選んでいるサイトは、管理画面で版を上げる</td></tr>
   <tr><td>Ubuntu・Debian の部品</td><td>OS を更新する（<code>apt</code>。提供元が直しを出してから）</td></tr>
   <tr><td>RHEL・Rocky・Alma の部品</td><td>OS を更新する（<code>dnf</code>。提供元が直しを出してから）</td></tr>
-  <tr><td>公式の PHP のコンテナ</td><td>新しいイメージを取り直して作り直す</td></tr>
+  <tr><td>公式の PHP のコンテナ</td><td>修正版の番号のイメージ（例：8.2.35）が出たことを確かめてから、取り直して作り直す</td></tr>
+  <tr><td>cPanel ／ Plesk</td><td>提供元の更新が当たっているかを確かめる（Plesk は管理画面自身の PHP も対象）</td></tr>
   <tr><td>Windows（XAMPP・手で入れた PHP）</td><td>https://windows.php.net/download/ から修正版を入れ直す</td></tr>
 </table>
+<p class="note">更新のあとは、Apache・PHP-FPM などの Web の処理を必ず再起動してください。製品に入っている PHP（業務の製品や管理画面に同梱されたもの）は、製品の提供元の更新が要ります。</p>
 
 <div class="box">
   <b>すぐに更新できない場合</b><br>
